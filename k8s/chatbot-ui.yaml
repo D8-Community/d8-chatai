@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: d8-chatai
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: d8-chatai
+  name: d8-chatai
+type: Opaque
+data:
+  OPENAI_API_KEY: c2stSDh0cjlnYmNjVlJxbjJWQnUwQVhUM0JsYmtGSnhud3RoWGVESGI5RldKN2JBbnNV
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: d8-chatai
+  name: d8-chatai
+  labels:
+    app: d8-chatai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: d8-chatai
+  template:
+    metadata:
+      labels:
+        app: d8-chatai
+    spec:
+      containers:
+        - name: d8-chatai
+          image: meetlily/d8-chatai:latest
+          resources: {}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: d8-chatai
+                  key: OPENAI_API_KEY
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: d8-chatai
+  name: d8-chatai
+  labels:
+    app: d8-chatai
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+  selector:
+    app: d8-chatai
+  type: ClusterIP
